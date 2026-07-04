@@ -1,0 +1,12 @@
+{
+  "app": "My Sport Space Clock, Scoreboard & Signage",
+  "version": "5.0",
+  "release": "GitHub Release",
+  "baseline": "v4.2 HORN FIX",
+  "added": [
+    "Timeout pauses game clock",
+    "Clock mode single court/location display",
+    "GitHub Pages index.html launcher"
+  ],
+  "missing_files_at_packaging": []
+}

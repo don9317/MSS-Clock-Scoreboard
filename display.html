@@ -1,0 +1,87 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>My Sport Space Clock, Scoreboard & Signage - Display</title>
+<link rel="stylesheet" href="display.css"/>
+</head>
+<body>
+<div id="bg"></div>
+
+<header class="displayHeader">
+  <div id="facilityName" class="facilityName">MY SPORT SPACE</div>
+  <div id="courtName" class="courtName">THE HIVE COURT 3</div>
+  <div class="poweredBy">
+    <span>POWERED BY</span>
+    <img src="mss-powered-by-logo.jpg" alt="My Sport Space"/>
+  </div>
+</header>
+
+<main>
+  <section id="clockView" class="clockView hidden">
+    <div class="clockCourt" id="clockCourtName">THE HIVE COURT 3</div>
+    <div class="clockTimeLine">
+      <div id="realClock" class="realClock">--:--</div>
+      <div id="seconds" class="seconds">--</div>
+    </div>
+    <div id="date" class="date">---</div>
+    <div id="clockSponsorBox" class="clockSponsorBox hidden">
+      <div class="sponsorLabel">Presented By</div>
+      <img id="clockSponsorLogo" class="sponsorLogo"/>
+    </div>
+  </section>
+
+  <section id="scoreboardView" class="scoreboardView">
+    <div class="scoreboardGrid">
+      <div class="scoreCard homeCard">
+        <div id="homeLabel" class="teamLabel">Rascals</div>
+        <div id="homeScore" class="scoreNum">3</div>
+        <div class="teamStats">
+          <div><span class="statWord">TO</span> <span id="homeTimeoutDisplay">3</span></div>
+          <div><span class="statWord">FOULS</span> <span id="homeFoulDisplay">0</span></div>
+        </div>
+      </div>
+
+      <div class="timeCard">
+        <div class="currentTimeLabel">Current Time</div>
+        <div id="scoreboardCurrentTime" class="scoreboardCurrentTime">--:-- --</div>
+        <div id="gameClock" class="gameClock">10:00</div>
+        <div class="periodLine">
+          <span class="periodRule"></span>
+          <div class="periodTile"><span class="statWord">PERIOD</span> <span id="periodTile">1</span></div>
+          <span class="periodRule"></span>
+        </div>
+        <div id="timeoutPanel" class="timeoutPanel hidden">
+          <div class="timeoutLabel">TIMEOUT</div>
+          <div id="timeoutClock" class="timeoutClock">0:30</div>
+        </div>
+      </div>
+
+      <div class="scoreCard awayCard">
+        <div id="awayLabel" class="teamLabel">Runaways</div>
+        <div id="awayScore" class="scoreNum">2</div>
+        <div class="teamStats">
+          <div><span class="statWord">TO</span> <span id="awayTimeoutDisplay">3</span></div>
+          <div><span class="statWord">FOULS</span> <span id="awayFoulDisplay">0</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div id="scoreboardSponsorBox" class="scoreboardSponsorBox hidden">
+      <div class="scoreboardSponsorLabel">Scoreboard Sponsor</div>
+      <img id="scoreboardSponsorLogo" class="scoreboardSponsorLogo"/>
+    </div>
+  </section>
+</main>
+
+<div id="adOverlay" class="adOverlay hidden">
+  <img id="adImage" class="adImage hidden"/>
+  <div id="announcementSlide" class="announcementSlide hidden"></div>
+</div>
+
+<script src="shared.js"></script>
+<script src="display.js"></script>
+<button id="soundEnableOverlay" class="soundEnableOverlay">Enable Horn Sound</button>
+</body>
+</html>

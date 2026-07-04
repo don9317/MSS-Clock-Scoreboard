@@ -1,0 +1,227 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>My Sport Space Clock, Scoreboard & Signage - Controller</title>
+<link rel="stylesheet" href="controller.css"/>
+</head>
+<body>
+<div id="bg"></div>
+
+<header class="displayHeader">
+  <div class="facilityName">MY SPORT SPACE</div>
+  <div class="courtName" id="previewCourt">THE HIVE COURT 3</div>
+  <div class="poweredBy">
+    <span>POWERED BY</span>
+    <img src="mss-powered-by-logo.jpg" alt="My Sport Space"/>
+  </div>
+</header>
+
+<main>
+  <section class="preview">
+    <div class="scoreboardGrid">
+      <div class="scoreCard">
+        <div id="previewHomeName" class="teamLabel">Rascals</div>
+        <div id="previewHomeScore" class="scoreNum">3</div>
+        <div class="teamStats">
+          <div><span class="statWord">TO</span> <span id="previewHomeTO">3</span></div>
+          <div><span class="statWord">FOULS</span> <span id="previewHomeFouls">0</span></div>
+        </div>
+      </div>
+      <div class="timeCard">
+        <div class="currentTimeLabel">Current Time</div>
+        <div id="previewCurrentTime" class="scoreboardCurrentTime">--:-- PM</div>
+        <div id="previewGameClock" class="gameClock">10:00</div>
+        <div class="periodLine">
+          <span class="periodRule"></span>
+          <div class="periodTile"><span class="statWord">PERIOD</span> <span id="previewPeriod">1</span></div>
+          <span class="periodRule"></span>
+        </div>
+      </div>
+      <div class="scoreCard">
+        <div id="previewAwayName" class="teamLabel">Runaways</div>
+        <div id="previewAwayScore" class="scoreNum">2</div>
+        <div class="teamStats">
+          <div><span class="statWord">TO</span> <span id="previewAwayTO">3</span></div>
+          <div><span class="statWord">FOULS</span> <span id="previewAwayFouls">0</span></div>
+        </div>
+      </div>
+    </div>
+    <div id="previewSponsor" class="previewSponsor hidden">
+      <div>Scoreboard Sponsor</div>
+      <img id="previewSponsorLogo"/>
+    </div>
+  </section>
+
+  <section class="controllerPanel">
+    <h1>Controller</h1>
+    <div class="controlGrid">
+      <div class="card">
+        <h2>Game Clock</h2>
+        <div class="miniClock" id="gameClockReadout">10:00</div>
+        <div class="buttonGrid two">
+          <button id="startStop" class="green">Start</button>
+          <button id="stopClock" class="red">Stop</button>
+          <button id="resetTimer">Reset</button>
+          <button data-adjust="30">+30 Sec</button>
+        </div>
+        <label>Clock Presets</label>
+        <div class="buttonGrid presets">
+          <button data-preset="30">30s</button><button data-preset="60">1m</button><button data-preset="120">2m</button><button data-preset="300">5m</button><button data-preset="480">8m</button><button data-preset="600">10m</button><button data-preset="1200">20m</button>
+        </div>
+        <label>Clock Correction</label>
+        <div class="buttonGrid presets">
+          <button data-adjust="-60">-1m</button><button data-adjust="-30">-30s</button><button data-adjust="-10">-10s</button><button data-adjust="10">+10s</button><button data-adjust="30">+30s</button><button data-adjust="60">+1m</button><button data-adjust="120">+2m</button>
+        </div>
+        <div class="inlineInputs">
+          <input id="correctionMinutes" type="number" min="0" step="1" placeholder="Min"/>
+          <input id="correctionSeconds" type="number" min="0" max="59" step="1" placeholder="Sec"/>
+          <button id="addCorrection">Add</button>
+          <button id="setCorrection">Set</button>
+        </div>
+        <button id="testHorn">Test Horn</button>
+      </div>
+
+      <div class="card">
+        <h2>Score</h2>
+        <div class="scoreControl">
+          <label id="homeScoreLabel">Home</label>
+          <button data-team="home" data-points="-1">−</button>
+          <b id="homeReadout">3</b>
+          <button data-team="home" data-points="1">+</button>
+        </div>
+        <div class="buttonGrid presets">
+          <button data-team="home" data-points="1">H +1</button><button data-team="home" data-points="2">H +2</button><button data-team="home" data-points="3">H +3</button>
+          <button data-team="away" data-points="1">A +1</button><button data-team="away" data-points="2">A +2</button><button data-team="away" data-points="3">A +3</button>
+        </div>
+        <div class="scoreControl">
+          <label id="awayScoreLabel">Away</label>
+          <button data-team="away" data-points="-1">−</button>
+          <b id="awayReadout">2</b>
+          <button data-team="away" data-points="1">+</button>
+        </div>
+        <button id="resetScores">Reset Scores</button>
+      </div>
+
+      <div class="card periodCard">
+        <h2>Period Settings</h2>
+        <label># of Periods in Game</label>
+        <div class="segmented" id="periodCountBtns">
+          <button data-period-count="1">1</button>
+          <button data-period-count="2">2</button>
+          <button data-period-count="4">4</button>
+          <button data-period-count="OT">OT</button>
+        </div>
+        <label>Current Period</label>
+        <div class="segmented" id="currentPeriodBtns">
+          <button data-current-period="1">1</button>
+          <button data-current-period="2">2</button>
+          <button data-current-period="3">3</button>
+          <button data-current-period="4">4</button>
+          <button data-current-period="OT">OT</button>
+        </div>
+        <button id="resetPeriod">Reset Period</button>
+      </div>
+
+      <div class="card">
+        <h2>Timeouts & Fouls</h2>
+        <label>Timeout Clock</label>
+        <div class="timeoutReadout" id="timeoutReadout">0:00</div>
+        <div class="buttonGrid two">
+          <button id="timeout30">30s TO</button>
+          <button id="timeout60">60s TO</button>
+          <button id="timeoutStartStop">Start TO</button>
+          <button id="timeoutReset">Reset TO</button>
+        </div>
+        <label>Timeouts Per Game</label>
+        <div class="counterRow">
+          <button id="timeoutsPerGameMinus">−</button><b id="timeoutsPerGameReadout">3</b><button id="timeoutsPerGamePlus">+</button>
+        </div>
+        <div class="split">
+          <div>
+            <label id="homeStatsLabel">Home</label>
+            <small>Timeouts Taken</small><div class="counterRow"><button id="homeTimeoutMinus">−</button><b id="homeTimeoutReadout">0</b><button id="homeTimeoutPlus">+</button></div>
+            <small>Team Fouls</small><div class="counterRow"><button id="homeFoulMinus">−</button><b id="homeFoulReadout">0</b><button id="homeFoulPlus">+</button></div>
+          </div>
+          <div>
+            <label id="awayStatsLabel">Away</label>
+            <small>Timeouts Taken</small><div class="counterRow"><button id="awayTimeoutMinus">−</button><b id="awayTimeoutReadout">0</b><button id="awayTimeoutPlus">+</button></div>
+            <small>Team Fouls</small><div class="counterRow"><button id="awayFoulMinus">−</button><b id="awayFoulReadout">0</b><button id="awayFoulPlus">+</button></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card systemCard">
+        <h2>System</h2>
+        <button id="modeClock">Clock Display</button>
+        <button id="modeScoreboard">Scoreboard Display</button>
+        <button id="openDisplay" class="blue">Open Display</button>
+        <button id="exitDisplay" class="orange">Exit Display</button>
+        <button id="exitProgram" class="red">Exit Program</button>
+      </div>
+
+      <div class="card wide">
+        <h2>Team Names</h2>
+        <div class="teamNameGrid">
+          <div><label>Home Team Name</label><input id="homeName" type="text" value="Rascals"/></div>
+          <div><label>Away Team Name</label><input id="awayName" type="text" value="Runaways"/></div>
+          <div><label>Court / Location</label><input id="courtName" type="text" value="THE HIVE COURT 3"/></div>
+          <div><label>Facility Name</label><input id="facilityName" type="text" value="MY SPORT SPACE"/></div>
+          <button id="saveNames">Apply Names</button>
+        </div>
+      </div>
+
+      <div class="card wide">
+        <h2>Logos, Sponsor & Signage</h2>
+        <div class="buttonGrid logos">
+          <button id="setFacilityLogo">Set Facility Logo</button>
+          <button id="clearFacilityLogo">Clear Facility Logo</button>
+          <button id="setSponsorLogo">Set Sponsor Logo</button>
+          <button id="clearSponsorLogo">Clear Sponsor Logo</button>
+          <button id="addAdSlide">Add Ad Slide</button>
+          <button id="clearAdSlides">Clear Slides</button>
+          <button id="previewAd">Preview Ad</button>
+        </div>
+        <div class="signageRow">
+          <label><input id="adsEnabled" type="checkbox"/> Enable Ads</label>
+          <select id="adInterval"><option value="120">Every 2 min</option><option value="180">Every 3 min</option><option value="300">Every 5 min</option></select>
+          <select id="adDuration"><option value="15">15 sec</option><option value="30">30 sec</option><option value="60">60 sec</option></select>
+          <input id="adSlideCount" readonly value="0 Slides"/>
+          <input id="sponsorStatus" readonly value="No Sponsor"/>
+        </div>
+        <label>Facility Announcements</label>
+        <div class="teamNameGrid announcements">
+          <input id="announcement1" type="text" placeholder="Announcement #1"/>
+          <input id="announcement2" type="text" placeholder="Announcement #2"/>
+          <input id="announcement3" type="text" placeholder="Announcement #3"/>
+          <button id="saveAnnouncements">Save Announcements</button>
+        </div>
+        <div id="adSlideList" class="adSlideList">No slides or announcements loaded.</div>
+      </div>
+
+      <div class="card wide">
+        <h2>Appearance</h2>
+        <div class="appearanceGrid">
+          <div><label>Score</label><div id="scorePalette" class="palette"></div></div>
+          <div><label>Timer</label><div id="timePalette" class="palette"></div></div>
+          <div><label>Clock</label><div id="clockPalette" class="palette"></div></div>
+          <div><label>Words</label><div id="wordPalette" class="palette"></div></div>
+          <div><label>Background</label><div id="backgroundPalette" class="palette"></div></div>
+        </div>
+        <button id="setBackground">Set Background Image</button>
+        <button id="clearBackground">Clear Background</button>
+      </div>
+    </div>
+  </section>
+</main>
+
+<input id="facilityLogoPicker" type="file" accept="image/*" hidden/>
+<input id="sponsorPicker" type="file" accept="image/*" hidden/>
+<input id="adSlidePicker" type="file" accept="image/*" hidden multiple/>
+<input id="bgPicker" type="file" accept="image/*" hidden/>
+
+<script src="shared.js"></script>
+<script src="controller.js"></script>
+</body>
+</html>
