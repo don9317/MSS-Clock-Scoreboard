@@ -9,6 +9,7 @@ function ensureHornAudio(){
   }catch(_){}
 }
 function playLocalHorn(){
+  if(state && state.hornEnabled === false) return;
   ensureHornAudio();
   if(!hornAudioCtx) return;
   const now = hornAudioCtx.currentTime;
@@ -43,7 +44,15 @@ function maybePlayLocalHorn(){
 }
 
 let state = loadState();
+const startupParams = new URLSearchParams(window.location.search);
+const startupMode = startupParams.get("mode");
+if(startupMode === "clock" || startupMode === "scoreboard"){
+  state.mode = startupMode;
+  saveState(state);
+}
+
 let lastTick = Date.now();
+let lastDisplayedSecond = null;
 
 const $ = id => document.getElementById(id);
 
@@ -54,34 +63,50 @@ function sync(){
 
 function tick(){
   const now = Date.now();
-  const elapsed = Math.max(0, Math.floor((now - lastTick)/1000));
-  if(elapsed <= 0) return;
-  lastTick = now;
   let changed = false;
 
-  if(state.gameRunning && state.gameRemaining > 0){
-    state.gameRemaining = Math.max(0, state.gameRemaining - elapsed);
-    if(state.gameRemaining <= 0){
+  // Deadline-based timing: elapsed browser/rendering delays cannot make the
+  // game clock run slow. Remaining time is derived from wall-clock time.
+  if(state.gameRunning){
+    if(!Number(state.gameEndAt)){
+      state.gameEndAt = now + Math.max(0, Number(state.gameRemaining || 0)) * 1000;
+    }
+    const remainingMs = Math.max(0, Number(state.gameEndAt) - now);
+    const remainingSec = Math.ceil(remainingMs / 1000);
+
+    if(remainingSec !== state.gameRemaining){
+      state.gameRemaining = remainingSec;
+      changed = true;
+    }
+
+    if(remainingMs <= 0){
+      state.gameRemaining = 0;
       state.gameRunning = false;
+      state.gameEndAt = 0;
       state.hornAt = Date.now();
       playLocalHorn();
+      changed = true;
     }
-    changed = true;
   }
 
   if(state.timeoutRunning && state.timeoutRemaining > 0){
-    state.timeoutRemaining = Math.max(0, state.timeoutRemaining - elapsed);
-    if(state.timeoutRemaining <= 0){
-      state.timeoutRunning = false;
-      state.hornAt = Date.now();
-      playLocalHorn();
+    const elapsed = Math.max(0, Math.floor((now - lastTick)/1000));
+    if(elapsed > 0){
+      state.timeoutRemaining = Math.max(0, state.timeoutRemaining - elapsed);
+      lastTick = now;
+      if(state.timeoutRemaining <= 0){
+        state.timeoutRunning = false;
+        state.hornAt = Date.now();
+        playLocalHorn();
+      }
+      changed = true;
     }
-    changed = true;
+  }else{
+    lastTick = now;
   }
 
   if(changed) sync();
 }
-
 function updateRealClock(){
   const d = new Date();
   const h24 = d.getHours();
@@ -91,6 +116,8 @@ function updateRealClock(){
 }
 
 function render(){
+  setTimeout(()=>{ if(typeof mssV66UpdateHornButtons==='function') mssV66UpdateHornButtons(); }, 0);
+  setTimeout(()=>{ if(typeof mssV63RenderAdSlideList==='function') mssV63RenderAdSlideList(); }, 0);
   maybePlayLocalHorn();
   document.documentElement.style.setProperty("--scoreColor", state.scoreColor || "#ff4a2a");
   document.documentElement.style.setProperty("--timeColor", state.timeColor || "#00b7ff");
@@ -158,14 +185,32 @@ document.querySelectorAll("[data-team][data-points]").forEach(btn => {
 });
 $("resetScores").onclick = () => { state.home=0; state.away=0; sync(); };
 
-$("startStop").onclick = () => { state.gameRunning = true; lastTick = Date.now(); sync(); };
-$("stopClock").onclick = () => { state.gameRunning = false; sync(); };
-$("resetTimer").onclick = () => { state.gameRunning = false; state.gameRemaining = state.gamePreset; sync(); };
+$("startStop").onclick = () => {
+  if(state.gameRemaining <= 0) state.gameRemaining = state.gamePreset;
+  state.gameRunning = true;
+  state.gameEndAt = Date.now() + Math.max(0, Number(state.gameRemaining || 0))*1000;
+  lastTick = Date.now();
+  sync();
+};
+$("stopClock").onclick = () => {
+  if(state.gameRunning && Number(state.gameEndAt)){
+    state.gameRemaining = Math.max(0, Math.ceil((state.gameEndAt - Date.now())/1000));
+  }
+  state.gameRunning = false;
+  state.gameEndAt = 0;
+  sync();
+};
+$("resetTimer").onclick = () => {
+  state.gameRunning = false;
+  state.gameEndAt = 0;
+  state.gameRemaining = state.gamePreset;
+  sync();
+};
 document.querySelectorAll("[data-preset]").forEach(btn => {
-  btn.onclick = () => { const sec=parseInt(btn.dataset.preset,10); state.gamePreset=sec; state.gameRemaining=sec; state.gameRunning=false; sync(); };
+  btn.onclick = () => { const sec=parseInt(btn.dataset.preset,10); state.gamePreset=sec; state.gameRemaining=sec; state.gameRunning=false; state.gameEndAt=0; sync(); };
 });
 document.querySelectorAll("[data-adjust]").forEach(btn => {
-  btn.onclick = () => { state.gameRemaining=Math.max(0,state.gameRemaining + parseInt(btn.dataset.adjust,10)); state.gamePreset=state.gameRemaining; sync(); };
+  btn.onclick = () => { state.gameRemaining=Math.max(0,state.gameRemaining + parseInt(btn.dataset.adjust,10)); state.gamePreset=state.gameRemaining; state.gameRunning=false; state.gameEndAt=0; sync(); };
 });
 function readCorrectionSeconds(){
   const min=parseInt($("correctionMinutes").value,10);
@@ -173,8 +218,37 @@ function readCorrectionSeconds(){
   return (Number.isFinite(min)&&min>=0?min:0)*60 + (Number.isFinite(sec)&&sec>=0?Math.min(sec,59):0);
 }
 $("addCorrection").onclick = () => { const total=readCorrectionSeconds(); if(total<=0)return alert("Enter minutes and/or seconds."); state.gameRemaining+=total; state.gamePreset=state.gameRemaining; sync(); };
-$("setCorrection").onclick = () => { const total=readCorrectionSeconds(); state.gameRemaining=total; state.gamePreset=total; state.gameRunning=false; sync(); };
-$("testHorn").onclick = () => { ensureHornAudio(); state.hornAt=Date.now(); sync(); playLocalHorn(); };
+$("setCorrection").onclick = () => { const total=readCorrectionSeconds(); state.gameRemaining=total; state.gamePreset=total; state.gameRunning=false; state.gameEndAt=0; sync(); };
+$("testHorn").onclick = () => { if(state.hornEnabled === false){ alert("Horn is OFF. Turn Horn ON first."); return; } ensureHornAudio(); state.hornAt=Date.now(); sync(); playLocalHorn(); };
+$("newGame").onclick = () => {
+  const keepPreset = Number(state.gamePreset || 600);
+  const keepPeriods = state.periodCount || "4";
+  const keepTimeouts = Number(state.timeoutsPerGame || 0);
+
+  state.gameRunning = false;
+  state.gameEndAt = 0;
+  state.gamePreset = keepPreset;
+  state.gameRemaining = keepPreset;
+
+  state.home = 0;
+  state.away = 0;
+  state.homeName = "HOME";
+  state.awayName = "VISITOR";
+
+  state.periodCount = keepPeriods;
+  state.currentPeriod = "1";
+
+  state.timeoutsPerGame = keepTimeouts;
+  state.homeTimeoutsTaken = 0;
+  state.awayTimeoutsTaken = 0;
+  state.homeFouls = 0;
+  state.awayFouls = 0;
+
+  state.timeoutRunning = false;
+  state.timeoutRemaining = 0;
+
+  sync();
+};
 
 document.querySelectorAll("[data-period-count]").forEach(btn => btn.onclick = () => { state.periodCount = btn.dataset.periodCount; sync(); });
 document.querySelectorAll("[data-current-period]").forEach(btn => btn.onclick = () => { state.currentPeriod = btn.dataset.currentPeriod; sync(); });
@@ -186,7 +260,11 @@ $("timeoutStartStop").onclick = () => {
   if(state.timeoutRemaining<=0) state.timeoutRemaining=state.timeoutPreset;
   state.timeoutRunning=!state.timeoutRunning;
   if(state.timeoutRunning){
+    if(state.gameRunning && Number(state.gameEndAt)){
+      state.gameRemaining = Math.max(0, Math.ceil((state.gameEndAt - Date.now())/1000));
+    }
     state.gameRunning = false;
+    state.gameEndAt = 0;
   }
   lastTick=Date.now();
   sync();
@@ -225,9 +303,52 @@ function sendSystemCommand(cmd){
     setTimeout(()=>{ window.close(); alert("If the Controller did not close, press Alt + F4."); }, 250);
   }
 }
-$("modeClock").onclick = () => { state.mode="clock"; sync(); };
-$("modeScoreboard").onclick = () => { state.mode="scoreboard"; sync(); };
-$("openDisplay").onclick = () => window.open("display.html","MSSDisplay","width=1280,height=720");
+let mssDisplayWindow = null;
+
+function openOrSetTvDisplay(mode){
+  mode = mode === "clock" ? "clock" : "scoreboard";
+  state.mode = mode;
+  sync();
+
+  const displayUrl = "display.html#" + mode;
+
+  try{
+    if(!mssDisplayWindow || mssDisplayWindow.closed){
+      mssDisplayWindow = window.open(
+        displayUrl,
+        "MSSDisplay",
+        "width=1280,height=720"
+      );
+    }else{
+      // Changing the hash is reliable for locally opened HTML files.
+      mssDisplayWindow.location.href = displayUrl;
+      mssDisplayWindow.focus();
+    }
+
+    if(mssDisplayWindow){
+      setTimeout(() => {
+        try{
+          mssDisplayWindow.postMessage(
+            {type:"MSS_SET_DISPLAY_MODE", mode:mode},
+            "*"
+          );
+        }catch(_){}
+      }, 250);
+    }
+  }catch(_){
+    window.open(displayUrl, "MSSDisplay", "width=1280,height=720");
+  }
+}
+
+$("modeClock").onclick = () => openOrSetTvDisplay("clock");
+if($("topModeClock")) $("topModeClock").onclick = () => openOrSetTvDisplay("clock");
+
+$("modeScoreboard").onclick = () => openOrSetTvDisplay("scoreboard");
+if($("topModeScoreboard")) $("topModeScoreboard").onclick = () => openOrSetTvDisplay("scoreboard");
+
+$("openDisplay").onclick = () => openOrSetTvDisplay(state.mode || "scoreboard");
+if($("topOpenDisplay")) $("topOpenDisplay").onclick = () => openOrSetTvDisplay(state.mode || "scoreboard");
+
 $("exitDisplay").onclick = () => sendSystemCommand("exitDisplay");
 $("exitProgram").onclick = () => sendSystemCommand("exitProgram");
 
@@ -241,16 +362,38 @@ $("addAdSlide").onclick = () => { $("adSlidePicker").value=""; $("adSlidePicker"
 $("adSlidePicker").onchange = () => {
   const files = Array.from($("adSlidePicker").files || []);
   if(!files.length) return;
-  let loaded=0;
+  let loaded = 0;
   const slides = state.adSlides || [];
-  files.forEach(file => fileToDataUrl(file, data => {
-    slides.push({name:file.name || `Slide ${slides.length+1}`, src:data});
-    loaded++;
-    if(loaded===files.length){ state.adSlides=slides; sync(); }
-  }));
+
+  files.forEach(file => {
+    const isImage = (file.type && file.type.startsWith("image/")) || /\.(png|jpe?g|gif|webp|svg)$/i.test(file.name || "");
+    if(!isImage){
+      alert(`${file.name || "Selected file"} is not an image.`);
+      loaded++;
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = () => {
+      slides.push({ name: file.name || `Slide ${slides.length + 1}`, src: reader.result });
+      loaded++;
+      if(loaded === files.length){
+        state.adSlides = slides;
+        state.adsEnabled = true;
+        state.previewAdAt = Date.now();
+        sync();
+      }
+    };
+    reader.onerror = () => {
+      alert(`Could not read ${file.name || "that image"}.`);
+      loaded++;
+      if(loaded === files.length){ state.adSlides = slides; sync(); }
+    };
+    reader.readAsDataURL(file);
+  });
 };
 $("clearAdSlides").onclick = () => { if(confirm("Clear all ad slides?")){ state.adSlides=[]; sync(); } };
-$("previewAd").onclick = () => { state.previewAdAt=Date.now(); sync(); };
+$("previewAd").onclick = () => { state.mode="clock"; state.adsEnabled=true; state.previewAdAt=Date.now(); sync(); };
 $("adsEnabled").onchange = () => { state.adsEnabled=$("adsEnabled").checked; sync(); };
 $("adInterval").onchange = () => { state.adInterval=parseInt($("adInterval").value,10)||120; sync(); };
 $("adDuration").onchange = () => { state.adDuration=parseInt($("adDuration").value,10)||30; sync(); };
@@ -261,10 +404,10 @@ function renderAdSlideList(){
   const parts=[];
   (state.adSlides||[]).forEach((slide,idx)=>{
     const name=typeof slide==="string"?`Slide ${idx+1}`:(slide.name||`Slide ${idx+1}`);
-    parts.push(`<span class="adSlideItem"><span class="adSlideType">Slide</span>${name}</span>`);
+    parts.push(`<span class="adSlideItem"><span class="adSlideType">Ad ${idx+1}</span>${name}</span>`);
   });
-  (state.announcements||[]).filter(x=>x&&x.trim()).forEach(text=>{
-    parts.push(`<span class="adSlideItem"><span class="adSlideType">Announcement</span>${text}</span>`);
+  (state.announcements||[]).filter(x=>x&&x.trim()).forEach((text,idx)=>{
+    parts.push(`<span class="adSlideItem"><span class="adSlideType">Announcement ${idx+1}</span>${text}</span>`);
   });
   box.innerHTML = parts.length ? parts.join("") : "No slides or announcements loaded.";
 }
@@ -315,7 +458,7 @@ try{
   }
 }catch(_){}
 
-setInterval(tick,250);
+setInterval(tick,100);
 setInterval(updateRealClock,1000);
 updateRealClock();
 render();
@@ -323,3 +466,117 @@ sync();
 
 document.addEventListener("click", ensureHornAudio);
 document.addEventListener("keydown", ensureHornAudio);
+
+/* v6.3 AD UPLOAD / LIST FIX */
+function mssV63RenderAdSlideList(){
+  const box = $("adSlideList");
+  if(!box) return;
+  const slides = state.adSlides || [];
+  const announcements = (state.announcements || []).filter(x => x && x.trim());
+  const parts = [];
+  slides.forEach((slide, idx) => {
+    const name = typeof slide === "string" ? `Ad Slide ${idx+1}` : (slide.name || `Ad Slide ${idx+1}`);
+    parts.push(`<span class="adSlideItem"><span class="adSlideType">Ad ${idx+1}</span>${name}</span>`);
+  });
+  announcements.forEach((text, idx) => {
+    parts.push(`<span class="adSlideItem"><span class="adSlideType">Announcement ${idx+1}</span>${text}</span>`);
+  });
+  box.innerHTML = parts.length ? parts.join("") : "No ad slides or announcements loaded yet.";
+  if($("adSlideCount")) $("adSlideCount").value = `${slides.length} Ad Slide${slides.length === 1 ? "" : "s"}`;
+  if($("sponsorStatus")) $("sponsorStatus").value = state.sponsorLogo ? "Sponsor Loaded" : "No Sponsor";
+}
+function mssV63ReadImageFile(file){
+  return new Promise((resolve, reject) => {
+    if(!file) return reject(new Error("No file selected."));
+    const ok = (file.type && file.type.startsWith("image/")) || /\.(png|jpe?g|gif|webp|svg)$/i.test(file.name || "");
+    if(!ok) return reject(new Error(`${file.name || "Selected file"} is not an image.`));
+    const reader = new FileReader();
+    reader.onload = () => resolve({name:file.name || "Ad Slide", src:reader.result});
+    reader.onerror = () => reject(new Error(`Could not read ${file.name || "that image"}.`));
+    reader.readAsDataURL(file);
+  });
+}
+if($("addAdSlide")){
+  $("addAdSlide").onclick = () => {
+    $("adSlidePicker").value = "";
+    $("adSlidePicker").click();
+  };
+}
+if($("adSlidePicker")){
+  $("adSlidePicker").onchange = async () => {
+    const files = Array.from($("adSlidePicker").files || []);
+    if(!files.length) return;
+    const slides = state.adSlides || [];
+    let added = 0;
+    for(const file of files){
+      try{
+        const slide = await mssV63ReadImageFile(file);
+        slides.push(slide);
+        added++;
+      }catch(err){
+        alert(err.message || "Could not upload that image.");
+      }
+    }
+    state.adSlides = slides;
+    state.adsEnabled = true;
+    state.mode = "clock";
+    state.previewAdAt = Date.now();
+    sync();
+    mssV63RenderAdSlideList();
+    if(added){
+      alert(`${added} ad slide${added === 1 ? "" : "s"} loaded. Click Preview Ad or wait for the rotation.`);
+    }
+  };
+}
+if($("clearAdSlides")){
+  $("clearAdSlides").onclick = () => {
+    if(confirm("Clear all ad slides?")){
+      state.adSlides = [];
+      sync();
+      mssV63RenderAdSlideList();
+    }
+  };
+}
+if($("previewAd")){
+  $("previewAd").onclick = () => {
+    state.mode = "clock";
+    state.adsEnabled = true;
+    state.previewAdAt = Date.now();
+    sync();
+    mssV63RenderAdSlideList();
+  };
+}
+if($("saveAnnouncements")){
+  $("saveAnnouncements").onclick = () => {
+    state.announcements = [
+      $("announcement1").value.trim(),
+      $("announcement2").value.trim(),
+      $("announcement3").value.trim()
+    ];
+    state.adsEnabled = true;
+    sync();
+    mssV63RenderAdSlideList();
+  };
+}
+mssV63RenderAdSlideList();
+
+
+/* v6.6 controller horn ON/OFF */
+function mssV66UpdateHornButtons(){
+  const on = state.hornEnabled !== false;
+  ["hornToggle","topHornToggle"].forEach(id => {
+    const btn = $(id);
+    if(!btn) return;
+    btn.textContent = on ? "Horn ON" : "Horn OFF";
+    btn.classList.toggle("hornOn", on);
+    btn.classList.toggle("hornOff", !on);
+  });
+}
+function mssV66ToggleHorn(){
+  state.hornEnabled = !(state.hornEnabled !== false);
+  sync();
+  mssV66UpdateHornButtons();
+}
+if($("hornToggle")) $("hornToggle").onclick = mssV66ToggleHorn;
+if($("topHornToggle")) $("topHornToggle").onclick = mssV66ToggleHorn;
+mssV66UpdateHornButtons();

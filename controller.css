@@ -47,3 +47,70 @@ button{cursor:pointer}button:hover{background:#30394a}.green{background:#12a046}
 .adSlideItem{display:inline-flex;gap:6px;margin:3px 6px 3px 0;padding:5px 8px;border-radius:999px;background:#2b3448;border:1px solid #49536b}.adSlideType{opacity:.72;font-size:11px;text-transform:uppercase;font-weight:900}
 .appearanceGrid{display:grid;grid-template-columns:repeat(5,1fr);gap:10px}.palette{display:flex;gap:6px;flex-wrap:wrap}.swatch{width:28px;height:28px;border-radius:999px;min-width:28px;padding:0;border:2px solid white}.bgSwatch{width:46px;height:28px;border-radius:8px;min-width:46px;padding:0;border:2px solid white;background-size:cover;background-position:center}.selected{outline:4px solid #fff;box-shadow:0 0 0 3px var(--timeColor)}
 @media(max-width:1300px){.controlGrid{grid-template-columns:1fr 1fr}.wide{grid-column:span 2}.scoreboardGrid{grid-template-columns:1fr}.teamNameGrid,.signageRow,.appearanceGrid{grid-template-columns:1fr 1fr}.buttonGrid.logos{grid-template-columns:1fr 1fr}}
+
+
+/* v6.0 UX updates */
+.systemCard h2{color:var(--wordColor)}.modeButton{min-height:72px;font-size:17px;border-radius:14px}.clockModeBtn{border-color:#1b9dd1;background:#1f3445}.scoreModeBtn{border-color:#9557c8;background:#332345}.scheduleModeBtn{opacity:.55;cursor:not-allowed}.softRule{width:100%;border:0;border-top:1px solid rgba(255,255,255,.18);margin:4px 0}
+
+
+/* v6.1 obvious controller mode controls */
+.controllerModeBar{
+  max-width:1880px;
+  margin:0 auto 14px;
+  display:grid;
+  grid-template-columns:auto 1fr 1fr auto;
+  gap:12px;
+  align-items:center;
+  background:rgba(0,0,0,.25);
+  border:1px solid rgba(255,255,255,.18);
+  border-radius:16px;
+  padding:12px;
+}
+.modeBarTitle{
+  color:var(--wordColor);
+  text-transform:uppercase;
+  font-weight:950;
+  letter-spacing:.08em;
+}
+.controllerModeBar button{
+  min-height:54px;
+  font-size:17px;
+}
+@media(max-width:900px){
+  .controllerModeBar{grid-template-columns:1fr}
+}
+
+.rotationHelp{margin-top:8px;font-size:13px;line-height:1.35;opacity:.82;background:rgba(0,0,0,.22);border:1px solid rgba(255,255,255,.12);border-radius:10px;padding:8px 10px}
+
+/* v6.3 ad list visibility */
+#adSlideList{color:white!important;min-height:44px!important;display:block!important}
+.adSlideItem{color:white!important}
+
+
+/* v6.6 horn controls */
+.hornToggle.hornOn{background:#138a43!important;border-color:#32c46c!important}
+.hornToggle.hornOff{background:#91241f!important;border-color:#d34b3f!important}
+
+/* v7.2 FINAL — HOME navigation for table operator */
+.controllerHome{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  min-height:38px;
+  padding:9px 13px;
+  border-radius:10px;
+  border:1px solid #47526a;
+  background:#20293a;
+  color:#fff;
+  font-weight:900;
+  font-size:13px;
+  text-decoration:none;
+  cursor:pointer;
+}
+.controllerHome:hover{filter:brightness(1.15)}
+.controllerHome.floatingHome{
+  position:fixed;
+  top:14px;
+  right:14px;
+  z-index:9999;
+}

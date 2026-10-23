@@ -1,12 +1,14 @@
 {
   "app": "My Sport Space Clock, Scoreboard & Signage",
-  "version": "5.0",
-  "release": "GitHub Release",
-  "baseline": "v4.2 HORN FIX",
-  "added": [
-    "Timeout pauses game clock",
-    "Clock mode single court/location display",
-    "GitHub Pages index.html launcher"
-  ],
-  "missing_files_at_packaging": []
+  "version": "7.2 FINAL \u2014 Visitor Fix",
+  "release": "Final Visitor Default Fix",
+  "baseline": "v7.2 Game Clock Accuracy + New Game",
+  "changes": [
+    "HOME button on Everyday Clock",
+    "HOME button on Scoreboard Controller",
+    "Clock + Schedule HOME standardized",
+    "HOME hidden on TV scoreboard",
+    "Removed remaining Say What?/Runaways demo visitor names",
+    "Migrates previously saved Say What? visitor label to VISITOR"
+  ]
 }

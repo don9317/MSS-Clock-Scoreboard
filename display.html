@@ -35,7 +35,7 @@
   <section id="scoreboardView" class="scoreboardView">
     <div class="scoreboardGrid">
       <div class="scoreCard homeCard">
-        <div id="homeLabel" class="teamLabel">Rascals</div>
+        <div id="homeLabel" class="teamLabel">HOME</div>
         <div id="homeScore" class="scoreNum">3</div>
         <div class="teamStats">
           <div><span class="statWord">TO</span> <span id="homeTimeoutDisplay">3</span></div>
@@ -59,7 +59,7 @@
       </div>
 
       <div class="scoreCard awayCard">
-        <div id="awayLabel" class="teamLabel">Runaways</div>
+        <div id="awayLabel" class="teamLabel">VISITOR</div>
         <div id="awayScore" class="scoreNum">2</div>
         <div class="teamStats">
           <div><span class="statWord">TO</span> <span id="awayTimeoutDisplay">3</span></div>
@@ -80,8 +80,11 @@
   <div id="announcementSlide" class="announcementSlide hidden"></div>
 </div>
 
+
+<button id="displayModeToggle" class="displayModeToggle" type="button">Start Scoreboard</button>
+
+<a id="displayHomeButton" class="displayHomeButton" href="index.html">HOME</a>
 <script src="shared.js"></script>
 <script src="display.js"></script>
-<button id="soundEnableOverlay" class="soundEnableOverlay">Enable Horn Sound</button>
 </body>
 </html>

@@ -1,5 +1,12 @@
 
 let state = loadState();
+const startupParams = new URLSearchParams(window.location.search);
+const startupMode = startupParams.get("mode");
+if(startupMode === "clock" || startupMode === "scoreboard"){
+  state.mode = startupMode;
+  saveState(state);
+}
+
 let lastHorn = state.hornAt || 0;
 const displayStartedAt = Date.now();
 let audioCtx = null;
@@ -75,6 +82,7 @@ function updateRealClock(){
 }
 
 function render(){
+  updateHornButton();
   handleSystemCommand();
 
   document.documentElement.style.setProperty("--scoreColor", state.scoreColor || "#ff4a2a");
@@ -89,6 +97,7 @@ function render(){
   $("awayLabel").textContent = state.awayName || "AWAY";
 
   document.body.classList.toggle("clockMode", state.mode === "clock");
+  document.body.classList.toggle("scoreboardMode", state.mode === "scoreboard");
   $("clockView").classList.toggle("hidden", state.mode !== "clock");
   $("scoreboardView").classList.toggle("hidden", state.mode !== "scoreboard");
 
@@ -124,7 +133,7 @@ function render(){
   $("scoreboardSponsorBox").classList.toggle("hidden", !state.sponsorLogo || state.mode !== "scoreboard");
   if(state.sponsorLogo) $("scoreboardSponsorLogo").src = state.sponsorLogo;
 
-  if(state.hornAt && state.hornAt !== lastHorn && state.hornAt >= displayStartedAt){
+  if(state.hornEnabled !== false && state.hornAt && state.hornAt !== lastHorn && state.hornAt >= displayStartedAt){
     lastHorn = state.hornAt;
     playHorn();
   }
@@ -210,14 +219,258 @@ updateRealClock();
 pullLatestState();
 render();
 
+function updateHornButton(){
+  const btn = document.getElementById("soundEnableOverlay");
+  if(!btn) return;
+  const on = state.hornEnabled !== false;
+  btn.textContent = on ? "Horn ON" : "Horn OFF";
+  btn.classList.toggle("hornOn", on);
+  btn.classList.toggle("hornOff", !on);
+}
 const soundBtn = document.getElementById("soundEnableOverlay");
 if(soundBtn){
   soundBtn.onclick = () => {
     ensureAudio();
-    soundBtn.textContent = "Horn Sound Enabled";
-    soundBtn.classList.add("enabled");
-    setTimeout(()=>soundBtn.style.display="none", 1400);
+    state.hornEnabled = !(state.hornEnabled !== false);
+    saveState(state);
+    updateHornButton();
   };
+}
+const switchToClockBtn = document.getElementById("switchToClock");
+if(switchToClockBtn){
+  switchToClockBtn.onclick = () => { state.mode = "clock"; saveState(state); render(); };
+}
+const switchToScoreboardBtn = document.getElementById("switchToScoreboard");
+if(switchToScoreboardBtn){
+  switchToScoreboardBtn.onclick = () => { state.mode = "scoreboard"; saveState(state); render(); };
 }
 document.addEventListener("click", ensureAudio);
 document.addEventListener("keydown", ensureAudio);
+updateHornButton();
+
+
+/* v6.2 ad rotation override */
+function availableAdItems(){
+  const items = [];
+  (state.adSlides || []).forEach((slide, idx) => {
+    const src = typeof slide === "string" ? slide : slide && slide.src;
+    const name = typeof slide === "string" ? `Ad ${idx+1}` : (slide && slide.name) || `Ad ${idx+1}`;
+    if(src) items.push({type:"image", src, name});
+  });
+  (state.announcements || []).filter(x => x && x.trim()).forEach((text, idx) => items.push({type:"announcement", text, name:`Announcement ${idx+1}`}));
+  return items;
+}
+
+function showAdItem(item){
+  const overlay = $("adOverlay"), img = $("adImage"), ann = $("announcementSlide");
+  if(!overlay || !item) return;
+  overlay.classList.remove("hidden");
+  img.classList.add("hidden");
+  ann.classList.add("hidden");
+  img.removeAttribute("src");
+
+  if(item.type === "image" && item.src){
+    img.onload = () => { ann.classList.add("hidden"); img.classList.remove("hidden"); };
+    img.onerror = () => {
+      img.classList.add("hidden");
+      ann.textContent = item.name ? `Could not display: ${item.name}` : "Could not display ad slide";
+      ann.classList.remove("hidden");
+    };
+    img.src = item.src;
+  } else {
+    ann.textContent = item.text || "";
+    ann.classList.remove("hidden");
+  }
+}
+
+function updateAdRotation(){
+  const items = availableAdItems();
+  const now = Date.now();
+  const enabled = state.adsEnabled && state.mode === "clock" && items.length > 0;
+  if(!enabled){ adMode=false; hideAd(); lastRotationStart=now; return; }
+
+  if(state.previewAdAt && state.previewAdAt !== window.lastPreviewAdAt){
+    window.lastPreviewAdAt = state.previewAdAt;
+    adMode = true;
+    adIndex = adIndex % items.length;
+    showAdItem(items[adIndex]);
+    lastRotationStart = now;
+    return;
+  }
+
+  const intervalMs = (state.adInterval || 120) * 1000;
+  const durationMs = (state.adDuration || 30) * 1000;
+  const elapsed = now - lastRotationStart;
+
+  if(!adMode && elapsed >= intervalMs){
+    adMode = true;
+    adIndex = adIndex % items.length;
+    showAdItem(items[adIndex]);
+    lastRotationStart = now;
+  } else if(adMode && elapsed >= durationMs){
+    adMode = false;
+    hideAd();
+    adIndex = (adIndex + 1) % items.length;
+    lastRotationStart = now;
+  }
+}
+
+/* v6.3 AD DISPLAY OVERRIDE */
+function mssV63AdItems(){
+  const items = [];
+  (state.adSlides || []).forEach((slide, idx) => {
+    const src = typeof slide === "string" ? slide : slide && slide.src;
+    const name = typeof slide === "string" ? `Ad Slide ${idx+1}` : (slide && slide.name) || `Ad Slide ${idx+1}`;
+    if(src) items.push({type:"image", src, name});
+  });
+  (state.announcements || []).filter(x => x && x.trim()).forEach((text, idx) => {
+    items.push({type:"announcement", text, name:`Announcement ${idx+1}`});
+  });
+  return items;
+}
+function availableAdItems(){ return mssV63AdItems(); }
+function showAdItem(item){
+  const overlay = $("adOverlay");
+  const img = $("adImage");
+  const ann = $("announcementSlide");
+  if(!overlay || !img || !ann || !item) return;
+  overlay.classList.remove("hidden");
+  img.classList.add("hidden");
+  ann.classList.add("hidden");
+  img.removeAttribute("src");
+  if(item.type === "image" && item.src){
+    img.onload = () => { ann.classList.add("hidden"); img.classList.remove("hidden"); };
+    img.onerror = () => {
+      img.classList.add("hidden");
+      ann.textContent = `Could not display ${item.name || "ad slide"}`;
+      ann.classList.remove("hidden");
+    };
+    img.src = item.src;
+  } else {
+    ann.textContent = item.text || "";
+    ann.classList.remove("hidden");
+  }
+}
+function updateAdRotation(){
+  const items = mssV63AdItems();
+  const now = Date.now();
+  const enabled = state.adsEnabled && state.mode === "clock" && items.length > 0;
+  if(!enabled){ adMode = false; hideAd(); lastRotationStart = now; return; }
+  if(state.previewAdAt && state.previewAdAt !== window.lastPreviewAdAt){
+    window.lastPreviewAdAt = state.previewAdAt;
+    adMode = true;
+    adIndex = adIndex % items.length;
+    showAdItem(items[adIndex]);
+    lastRotationStart = now;
+    return;
+  }
+  const intervalMs = (state.adInterval || 120) * 1000;
+  const durationMs = (state.adDuration || 30) * 1000;
+  const elapsed = now - lastRotationStart;
+  if(!adMode && elapsed >= intervalMs){
+    adMode = true;
+    adIndex = adIndex % items.length;
+    showAdItem(items[adIndex]);
+    lastRotationStart = now;
+  } else if(adMode && elapsed >= durationMs){
+    adMode = false;
+    hideAd();
+    adIndex = (adIndex + 1) % items.length;
+    lastRotationStart = now;
+  }
+}
+
+
+
+
+
+
+
+
+/* v7.0e revised — Start Scoreboard workflow */
+(function(){
+  const btn = document.getElementById("displayModeToggle");
+  if(!btn) return;
+
+  function normalizeMode(value){
+    return value === "scoreboard" ? "scoreboard" : "clock";
+  }
+
+  function modeFromHash(){
+    const hash = (window.location.hash || "").replace("#","").toLowerCase();
+    if(hash === "clock" || hash === "scoreboard") return hash;
+    return null;
+  }
+
+  function applyMode(mode, updateHash){
+    mode = normalizeMode(mode);
+    state.mode = mode;
+    saveState(state);
+
+    if(updateHash && window.location.hash !== "#" + mode){
+      history.replaceState(null, "", "#" + mode);
+    }
+
+    if(typeof render === "function"){
+      render();
+    }
+
+    btn.textContent = mode === "clock" ? "Start Scoreboard" : "Return to Clock";
+    const home = document.getElementById("displayHomeButton");
+    if(home) home.style.display = mode === "clock" ? "inline-block" : "none";
+
+  }
+
+  function openScoreboardController(){
+    try{
+      const controller = window.open(
+        "controller.html",
+        "MSSController",
+        "width=1500,height=950,left=40,top=40"
+      );
+      if(controller){
+        try{ controller.focus(); }catch(_){}
+      }
+    }catch(_){
+      window.open("controller.html", "MSSController");
+    }
+  }
+
+  const startupHashMode = modeFromHash();
+  if(startupHashMode){
+    applyMode(startupHashMode, false);
+  }else{
+    applyMode(normalizeMode(state.mode), true);
+  }
+
+  btn.addEventListener("click", function(event){
+    event.preventDefault();
+    event.stopPropagation();
+
+    const current = normalizeMode(state.mode);
+
+    if(current === "clock"){
+      // Game is starting: switch the TV to Scoreboard and open laptop controls.
+      applyMode("scoreboard", true);
+      openScoreboardController();
+    }else{
+      // Game is over: return TV to the everyday clock.
+      applyMode("clock", true);
+    }
+  });
+
+  window.addEventListener("hashchange", function(){
+    const requested = modeFromHash();
+    if(requested){
+      applyMode(requested, false);
+    }
+  });
+
+  window.addEventListener("message", function(event){
+    const data = event.data || {};
+    if(data.type === "MSS_SET_DISPLAY_MODE" &&
+       (data.mode === "clock" || data.mode === "scoreboard")){
+      applyMode(data.mode, true);
+    }
+  });
+})();

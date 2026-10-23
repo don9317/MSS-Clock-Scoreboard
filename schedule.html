@@ -1,0 +1,111 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>My Sport Space — Clock + Schedule Prototype</title>
+<link rel="stylesheet" href="schedule.css"/>
+</head>
+<body>
+<main id="scheduleApp">
+  <header class="topbar">
+    <div class="brand">MY SPORT SPACE</div>
+    <div id="courtLabel" class="court">COURT 3</div>
+    <div class="powered">Powered by <img src="mss-powered-by-logo.jpg" alt="My Sport Space"/></div>
+  </header>
+
+  <section class="clockArea">
+    <div id="liveTime" class="time">--:-- --</div>
+    <div id="liveDate" class="date">---</div>
+    <div id="syncBadge" class="syncBadge">DEMO DATA</div>
+  </section>
+
+  <section class="scheduleGrid">
+    <article class="reservationCard now">
+      <div class="eyebrow">NOW</div>
+      <div id="nowTitle" class="eventTitle">Open Court</div>
+      <div id="nowTime" class="eventTime">No current reservation</div>
+      <div id="nowSport" class="eventMeta"></div>
+    </article>
+
+    <article class="reservationCard next">
+      <div class="eyebrow">NEXT</div>
+      <div id="nextTitle" class="eventTitle">No upcoming reservation</div>
+      <div id="nextTime" class="eventTime"></div>
+      <div id="nextSport" class="eventMeta"></div>
+    </article>
+  </section>
+
+  <div id="connectionStatus" class="connectionStatus">Prototype is running with sample reservations.</div>
+
+  <nav class="displayActions">
+    <button id="startScoreboard" type="button">Start Scoreboard</button>
+    <button id="fullScreen" type="button">Full Screen</button>
+    <button id="showSetup" type="button">Schedule Setup</button>
+    <a href="index.html">HOME</a>
+  </nav>
+</main>
+
+<aside id="setupPanel" class="setupPanel" hidden>
+  <div class="setupHeader">
+    <div>
+      <h2>Clock + Schedule Setup</h2>
+      <p>This prototype is ready for a read-only MSS bridge. The existing scoreboard files are unchanged.</p>
+    </div>
+    <button id="closeSetup" type="button">Close</button>
+  </div>
+
+  <div class="formGrid">
+    <label>Facility Name
+      <input id="facilityName" value="MY SPORT SPACE"/>
+    </label>
+    <label>Court / Location
+      <input id="courtName" value="COURT 3"/>
+    </label>
+    <label>MSS Facility ID
+      <input id="facilityId" value="Vg0Kw0dgPIguZax5GzFsUutQyYU2"/>
+    </label>
+    <label>Refresh Interval
+      <select id="refreshSeconds">
+        <option value="30">30 seconds</option>
+        <option value="60" selected>60 seconds</option>
+        <option value="120">2 minutes</option>
+      </select>
+    </label>
+  </div>
+
+  <label class="wide">Bridge URL supplied by MSS
+    <input id="bridgeUrl" placeholder="https://.../clock-schedule"/>
+  </label>
+
+  <div class="setupButtons">
+    <button id="saveScheduleSetup" type="button">Save Setup</button>
+    <button id="testBridge" type="button">Test Live Bridge</button>
+    <button id="useDemo" type="button">Use Demo Data</button>
+  </div>
+
+  <div class="contract">
+    <h3>Expected bridge response</h3>
+    <pre>{
+  "serverTime": "2026-08-11T18:42:00-05:00",
+  "court": "COURT 3",
+  "current": {
+    "title": "Swarm Practice",
+    "start": "2026-08-11T18:00:00-05:00",
+    "end": "2026-08-11T19:30:00-05:00",
+    "sport": "Basketball"
+  },
+  "next": {
+    "title": "Court Rental",
+    "start": "2026-08-11T19:30:00-05:00",
+    "end": "2026-08-11T20:30:00-05:00",
+    "sport": "Basketball"
+  }
+}</pre>
+  </div>
+</aside>
+
+<script src="shared.js"></script>
+<script src="schedule.js"></script>
+</body>
+</html>

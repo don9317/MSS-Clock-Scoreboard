@@ -5,13 +5,14 @@ const defaultState = {
   mode: "scoreboard",
   facilityName: "MY SPORT SPACE",
   courtName: "THE HIVE COURT 3",
-  homeName: "Rascals",
-  awayName: "Runaways",
+  homeName: "HOME",
+  awayName: "VISITOR",
   home: 3,
   away: 2,
   gameRemaining: 600,
   gamePreset: 600,
   gameRunning: false,
+  gameEndAt: 0,
   periodCount: "4",
   currentPeriod: "1",
   timeoutsPerGame: 3,
@@ -38,6 +39,7 @@ const defaultState = {
   adDuration: 30,
   previewAdAt: 0,
   hornAt: 0,
+  hornEnabled: true,
   systemCommand: ""
 };
 
@@ -54,7 +56,15 @@ const gradients = [
 const colors = ["#ffffff","#ff4a2a","#ffcc00","#34c759","#00b7ff","#bf5af2","#ff9500"];
 
 function loadState(){
-  try { return {...defaultState, ...(JSON.parse(localStorage.getItem(MSS_KEY)) || {})}; }
+  try {
+    const saved = JSON.parse(localStorage.getItem(MSS_KEY)) || {};
+    const merged = {...defaultState, ...saved};
+    if(["Runaways","Say What?","Say What"].includes(merged.awayName)) merged.awayName = "VISITOR";
+    if(merged.homeName === "Rascals") merged.homeName = "HOME";
+    if(merged.homeName === "HOME") merged.homeName = "HOME";
+    if(merged.awayName === "VISITOR") merged.awayName = "VISITOR";
+    return merged;
+  }
   catch { return {...defaultState}; }
 }
 

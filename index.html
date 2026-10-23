@@ -1,5 +1,78 @@
 <!doctype html>
-<html><head><meta charset="utf-8"/><title>My Sport Space Clock, Scoreboard & Signage</title>
-<style>body{font-family:system-ui;background:#10131a;color:white;min-height:100vh;margin:0;display:flex;align-items:center;justify-content:center}.card{max-width:720px;background:#1b2130;border:1px solid #30384d;border-radius:22px;padding:30px}button,a{display:inline-block;border:1px solid #4a5672;background:#2f3a52;color:white;border-radius:14px;padding:14px 18px;margin:8px 8px 8px 0;font-weight:900;text-decoration:none;cursor:pointer;font-size:17px}</style></head>
-<body><div class="card"><h1>My Sport Space Clock, Scoreboard & Signage</h1><p>GitHub Release v5.0</p><button onclick="openBoth()">Open Controller + Display</button><button onclick="resetSavedState()">Reset Saved Settings</button><a href="controller.html" target="_blank">Open Controller Only</a><a href="display.html" target="_blank">Open Display Only</a><p>Move Display to TV with Windows + Shift + Arrow, then press F11.</p></div>
-<script>function openBoth(){window.open("controller.html","MSSController","width=1400,height=900");setTimeout(()=>window.open("display.html","MSSDisplay","width=1280,height=720"),350);}function resetSavedState(){localStorage.removeItem("mss_scoreboard_signage_v4_final");alert("Saved settings reset. Now open Controller + Display again.");}</script></body></html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>My Sport Space Display Suite</title>
+<style>
+:root{--blue:#00b7ff;--purple:#bf5af2;--card:#1b2130;--border:#30384d}
+*{box-sizing:border-box}
+body{font-family:system-ui,Segoe UI,Arial,sans-serif;background:radial-gradient(circle at center,#222936,#10131a 55%,#07090e);color:white;min-height:100vh;margin:0;display:flex;align-items:center;justify-content:center;padding:30px}
+.card{width:min(950px,96vw);background:rgba(27,33,48,.96);border:1px solid var(--border);border-radius:26px;padding:34px;box-shadow:0 26px 90px rgba(0,0,0,.4)}
+h1{margin:0;font-size:clamp(32px,4vw,54px)}
+.sub{font-size:19px;opacity:.86;margin:7px 0 4px}.version{font-size:12px;letter-spacing:.12em;text-transform:uppercase;opacity:.6;margin-bottom:28px}
+.setup{display:grid;grid-template-columns:1fr 1fr auto;gap:12px;align-items:end;background:rgba(0,0,0,.2);border:1px solid rgba(255,255,255,.14);border-radius:18px;padding:16px}
+label{display:block;font-size:12px;text-transform:uppercase;font-weight:900;letter-spacing:.07em;opacity:.82;margin-bottom:6px}
+input{width:100%;border:1px solid #4a5672;background:#0f131c;color:white;border-radius:12px;padding:13px 14px;font-size:17px;font-weight:800}
+button,.mode{border:1px solid #4a5672;background:#2f3a52;color:white;border-radius:14px;padding:13px 16px;font-weight:900;font-size:16px;text-decoration:none;cursor:pointer}
+.modeGrid{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;margin-top:15px}
+.mode{display:block;padding:26px;min-height:185px}.mode.clock{border-color:#1b9dd1}.mode.schedule{border-color:#39c98b}.mode.score{border-color:#9557c8}.mode:hover{filter:brightness(1.12)}
+.icon{display:block;font-size:40px;margin-bottom:10px}.name{display:block;font-size:27px;font-weight:950}.desc{display:block;font-size:15px;line-height:1.45;opacity:.78;margin-top:9px}
+.notice{margin-top:22px;padding:14px 16px;background:rgba(0,0,0,.22);border:1px solid rgba(255,255,255,.12);border-radius:14px;line-height:1.45}
+.status{color:#7ee2ff;font-weight:800;min-height:24px;margin-top:10px}.secondary{display:flex;gap:10px;flex-wrap:wrap;margin-top:18px}
+@media(max-width:760px){.setup,.modeGrid{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<main class="card">
+  <h1>My Sport Space</h1>
+  <div class="sub">Clock, Scoreboard &amp; Signage</div>
+  <div class="version">v7.1 — Clock + Schedule Prototype</div>
+
+  <section class="setup">
+    <div><label for="facilityName">Facility Name</label><input id="facilityName"/></div>
+    <div><label for="courtName">Court / Location</label><input id="courtName"/></div>
+    <button id="saveSetup" type="button">Save Setup</button>
+  </section>
+
+  <h2>Choose What to Run</h2>
+  <section class="modeGrid">
+    <a id="clockLink" class="mode clock" href="display.html#clock">
+      <span class="icon">🕒</span><span class="name">Everyday Clock</span>
+      <span class="desc">Opens the Clock directly from the local application folder.</span>
+    </a>
+    <a id="scheduleLink" class="mode schedule" href="schedule.html">
+      <span class="icon">📅</span><span class="name">Clock + Schedule</span>
+      <span class="desc">v7.1 prototype. Shows the current and next court reservation. Runs with demo data until the MSS bridge is supplied.</span>
+    </a>
+    <a id="scoreLink" class="mode score" href="controller.html">
+      <span class="icon">🏀</span><span class="name">Scoreboard</span>
+      <span class="desc">Opens the Controller directly. From the Controller, click <b>Open Display</b> for the TV scoreboard.</span>
+    </a>
+  </section>
+
+  <div id="status" class="status"></div>
+  <div class="notice"><b>Why two clicks for Scoreboard?</b> Reliability. The launcher opens the Controller normally; the Controller's <b>Open Display</b> button is then a direct user click, so browsers do not block the TV window.</div>
+  <div class="secondary">
+    <a class="mode" style="min-height:auto;padding:12px 15px" href="controller.html">Controller Only</a>
+    <a class="mode" style="min-height:auto;padding:12px 15px" href="display.html">Display Only</a>
+    <button id="resetSettings" type="button">Reset Saved Settings</button>
+  </div>
+</main>
+<script src="shared.js"></script>
+<script>
+(function(){
+ const facility=document.getElementById('facilityName');
+ const court=document.getElementById('courtName');
+ const status=document.getElementById('status');
+ function load(){const s=loadState();facility.value=s.facilityName||'MY SPORT SPACE';court.value=s.courtName||'COURT 3';}
+ function save(){const s=loadState();if(facility.value.trim())s.facilityName=facility.value.trim().toUpperCase();if(court.value.trim())s.courtName=court.value.trim().toUpperCase();saveState(s);return s;}
+ document.getElementById('saveSetup').addEventListener('click',()=>{save();status.textContent='Setup saved.';setTimeout(()=>status.textContent='',1800);});
+ document.getElementById('clockLink').addEventListener('click',()=>{const s=save();s.mode='clock';saveState(s);});
+ document.getElementById('scoreLink').addEventListener('click',()=>{const s=save();s.mode='scoreboard';saveState(s);});
+ document.getElementById('resetSettings').addEventListener('click',()=>{if(confirm('Reset saved settings?')){localStorage.removeItem(MSS_KEY);load();status.textContent='Settings reset.';}});
+ load();
+})();
+</script>
+</body>
+</html>

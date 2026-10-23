@@ -1,0 +1,150 @@
+:root{
+  --cyan:#08b7ff;
+  --purple:#bf5af2;
+  --orange:#ff4b29;
+  --bg:#07090d;
+  --panel:#11161d;
+  --border:#303845;
+}
+*{box-sizing:border-box}
+html,body{margin:0;min-height:100%;background:var(--bg);color:#fff;font-family:system-ui,Segoe UI,Arial,sans-serif}
+body{min-height:100vh}
+#scheduleApp{
+  min-height:100vh;
+  padding:26px 34px 30px;
+  background:
+    radial-gradient(circle at 50% 22%,rgba(14,183,255,.08),transparent 30%),
+    linear-gradient(180deg,#0b0f14,#06080b);
+}
+.topbar{
+  display:grid;
+  grid-template-columns:1fr auto 1fr;
+  align-items:center;
+  gap:20px;
+  min-height:70px;
+}
+.brand,.court{
+  color:var(--purple);
+  font-weight:950;
+  letter-spacing:.15em;
+  font-size:clamp(16px,2vw,26px);
+}
+.court{text-align:center}
+.powered{
+  justify-self:end;
+  display:flex;
+  align-items:center;
+  gap:8px;
+  padding:6px 9px;
+  border-radius:10px;
+  background:#fff;
+  color:#172033;
+  font-size:10px;
+  font-weight:900;
+  text-transform:uppercase;
+}
+.powered img{width:52px;height:32px;object-fit:contain}
+.clockArea{text-align:center;padding:5vh 10px 3.5vh}
+.time{
+  color:var(--cyan);
+  font-size:clamp(86px,15vw,230px);
+  line-height:.9;
+  font-weight:1000;
+  letter-spacing:-.055em;
+}
+.date{
+  margin-top:24px;
+  color:var(--purple);
+  font-size:clamp(28px,4vw,58px);
+  font-weight:900;
+}
+.syncBadge{
+  display:inline-block;
+  margin-top:16px;
+  padding:6px 11px;
+  border:1px solid rgba(255,255,255,.18);
+  border-radius:999px;
+  font-size:11px;
+  font-weight:900;
+  letter-spacing:.12em;
+  opacity:.75;
+}
+.scheduleGrid{
+  width:min(1300px,94vw);
+  margin:0 auto;
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:24px;
+}
+.reservationCard{
+  min-height:220px;
+  border:1px solid var(--border);
+  border-radius:24px;
+  padding:28px 30px;
+  background:rgba(16,21,28,.92);
+  box-shadow:0 15px 50px rgba(0,0,0,.25);
+}
+.reservationCard.now{border-color:rgba(8,183,255,.5)}
+.reservationCard.next{border-color:rgba(191,90,242,.5)}
+.eyebrow{
+  font-size:18px;
+  letter-spacing:.18em;
+  font-weight:1000;
+  color:var(--cyan);
+}
+.next .eyebrow{color:var(--purple)}
+.eventTitle{font-size:clamp(32px,4vw,58px);font-weight:1000;margin-top:15px}
+.eventTime{font-size:clamp(22px,2.5vw,36px);font-weight:850;margin-top:8px;opacity:.9}
+.eventMeta{font-size:18px;margin-top:9px;opacity:.6}
+.connectionStatus{text-align:center;margin:22px auto 0;opacity:.65;font-size:14px}
+.displayActions{
+  position:fixed;
+  left:18px;
+  bottom:16px;
+  display:flex;
+  gap:8px;
+  z-index:10;
+}
+.displayActions button,.displayActions a{
+  color:white;
+  background:rgba(0,0,0,.78);
+  border:1px solid rgba(255,255,255,.25);
+  border-radius:10px;
+  padding:9px 12px;
+  font-size:13px;
+  font-weight:900;
+  text-decoration:none;
+  cursor:pointer;
+}
+.setupPanel{
+  position:fixed;
+  inset:24px;
+  z-index:100;
+  overflow:auto;
+  padding:28px;
+  background:rgba(17,22,29,.985);
+  border:1px solid #475268;
+  border-radius:22px;
+  box-shadow:0 30px 90px rgba(0,0,0,.7);
+}
+.setupHeader{display:flex;justify-content:space-between;gap:20px;align-items:flex-start}
+.setupHeader h2{margin:0;font-size:30px}
+.setupHeader p{opacity:.7;max-width:700px}
+.setupHeader button,.setupButtons button{
+  border:1px solid #4c5870;background:#2f3a52;color:white;border-radius:11px;padding:11px 14px;font-weight:900;cursor:pointer
+}
+.formGrid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:20px}
+label{display:block;font-size:12px;font-weight:950;letter-spacing:.07em;text-transform:uppercase}
+input,select{
+  display:block;width:100%;margin-top:7px;padding:12px 13px;border:1px solid #46536d;
+  border-radius:10px;background:#0d1219;color:white;font-size:15px
+}
+.wide{margin-top:16px}
+.setupButtons{display:flex;gap:10px;flex-wrap:wrap;margin-top:18px}
+.contract{margin-top:24px;border-top:1px solid #394154;padding-top:18px}
+.contract pre{white-space:pre-wrap;background:#080b10;border-radius:12px;padding:16px;overflow:auto;color:#cdeeff}
+@media(max-width:850px){
+  .topbar{grid-template-columns:1fr}.court{text-align:left}.powered{justify-self:start}
+  .scheduleGrid,.formGrid{grid-template-columns:1fr}
+  .clockArea{padding-top:20px}.time{font-size:20vw}
+}

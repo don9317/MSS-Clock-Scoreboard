@@ -7,6 +7,7 @@
 <link rel="stylesheet" href="controller.css"/>
 </head>
 <body>
+<a id="controllerHome" class="controllerHome floatingHome" href="index.html">HOME</a>
 <div id="bg"></div>
 
 <header class="displayHeader">
@@ -19,10 +20,18 @@
 </header>
 
 <main>
+  <div id="v70aWorkflowNote" style="max-width:1880px;margin:0 auto 10px;padding:10px 14px;border:1px solid rgba(255,255,255,.18);border-radius:12px;background:rgba(0,0,0,.25);font-weight:800;color:#fff">Scoreboard Controller — keep this on the laptop. Click <b>Open Display</b> below to open the TV scoreboard.</div>
+  <section id="controllerModeBar" class="controllerModeBar">
+    <div class="modeBarTitle">Display Mode</div>
+    <button id="topModeClock" class="modeButton clockModeBtn">🕒 Show Clock</button>
+    <button id="topModeScoreboard" class="modeButton scoreModeBtn">🏀 Show Scoreboard</button>
+    <button id="topOpenDisplay" class="blue">Open Display</button>
+    <button id="topHornToggle" class="hornToggle">Horn ON</button>
+  </section>
   <section class="preview">
     <div class="scoreboardGrid">
       <div class="scoreCard">
-        <div id="previewHomeName" class="teamLabel">Rascals</div>
+        <div id="previewHomeName" class="teamLabel">HOME</div>
         <div id="previewHomeScore" class="scoreNum">3</div>
         <div class="teamStats">
           <div><span class="statWord">TO</span> <span id="previewHomeTO">3</span></div>
@@ -40,7 +49,7 @@
         </div>
       </div>
       <div class="scoreCard">
-        <div id="previewAwayName" class="teamLabel">Runaways</div>
+        <div id="previewAwayName" class="teamLabel">VISITOR</div>
         <div id="previewAwayScore" class="scoreNum">2</div>
         <div class="teamStats">
           <div><span class="statWord">TO</span> <span id="previewAwayTO">3</span></div>
@@ -72,7 +81,7 @@
         </div>
         <label>Clock Correction</label>
         <div class="buttonGrid presets">
-          <button data-adjust="-60">-1m</button><button data-adjust="-30">-30s</button><button data-adjust="-10">-10s</button><button data-adjust="10">+10s</button><button data-adjust="30">+30s</button><button data-adjust="60">+1m</button><button data-adjust="120">+2m</button>
+          <button data-adjust="-60">-1m</button><button data-adjust="-30">-30s</button><button data-adjust="-10">-10s</button><button data-adjust="-1">-1s</button><button data-adjust="1">+1s</button><button data-adjust="10">+10s</button><button data-adjust="30">+30s</button><button data-adjust="60">+1m</button><button data-adjust="120">+2m</button>
         </div>
         <div class="inlineInputs">
           <input id="correctionMinutes" type="number" min="0" step="1" placeholder="Min"/>
@@ -81,6 +90,7 @@
           <button id="setCorrection">Set</button>
         </div>
         <button id="testHorn">Test Horn</button>
+        <button id="newGame" class="blue">New Game — Keep Game Settings</button>
       </div>
 
       <div class="card">
@@ -153,10 +163,13 @@
       </div>
 
       <div class="card systemCard">
-        <h2>System</h2>
-        <button id="modeClock">Clock Display</button>
-        <button id="modeScoreboard">Scoreboard Display</button>
+        <h2>Display Mode</h2>
+        <button id="modeClock" class="modeButton clockModeBtn">🕒 Show Clock</button>
+        <button id="modeScoreboard" class="modeButton scoreModeBtn">🏀 Show Scoreboard</button>
+        <button id="modeClockSchedule" class="modeButton scheduleModeBtn" disabled>Clock + Schedule<br><small>Coming soon</small></button>
+        <hr class="softRule"/>
         <button id="openDisplay" class="blue">Open Display</button>
+        <button id="hornToggle" class="hornToggle">Horn ON</button>
         <button id="exitDisplay" class="orange">Exit Display</button>
         <button id="exitProgram" class="red">Exit Program</button>
       </div>
@@ -164,8 +177,8 @@
       <div class="card wide">
         <h2>Team Names</h2>
         <div class="teamNameGrid">
-          <div><label>Home Team Name</label><input id="homeName" type="text" value="Rascals"/></div>
-          <div><label>Away Team Name</label><input id="awayName" type="text" value="Runaways"/></div>
+          <div><label>Home Team Name</label><input id="homeName" type="text" value="HOME"/></div>
+          <div><label>Away Team Name</label><input id="awayName" type="text" value="VISITOR"/></div>
           <div><label>Court / Location</label><input id="courtName" type="text" value="THE HIVE COURT 3"/></div>
           <div><label>Facility Name</label><input id="facilityName" type="text" value="MY SPORT SPACE"/></div>
           <button id="saveNames">Apply Names</button>
@@ -198,6 +211,9 @@
           <button id="saveAnnouncements">Save Announcements</button>
         </div>
         <div id="adSlideList" class="adSlideList">No slides or announcements loaded.</div>
+        <div id="rotationHelp" class="rotationHelp">
+          Rotation: ad slides and announcements are combined. In Clock mode, one item displays for the selected duration, then the screen returns to the clock until the next interval.
+        </div>
       </div>
 
       <div class="card wide">
